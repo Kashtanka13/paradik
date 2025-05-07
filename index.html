@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная Схема Движения на Параде</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            color: #1a202c;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2c5282;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .parade-route {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: 250px;
+            background-color: #cbd5e0; /* Цвет дороги */
+            border-radius: 8px;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 20px;
+            overflow: hidden;
+        }
+        .vehicle-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            min-width: 130px;
+            min-height: 100px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer; /* Указывает, что элемент кликабельный */
+        }
+        .vehicle-group:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+        .mo { background-color: #4a5568; } /* МО */
+        .mu { background-color: #2b6cb0; } /* МЮ */
+        .mz { background-color: #c53030; } /* МЗ */
+
+        .arrow {
+            font-size: 2rem;
+            color: #2d3748; /* Цвет стрелок */
+            margin: 0 15px;
+            animation: moveArrow 1.5s infinite ease-in-out;
+        }
+
+        @keyframes moveArrow {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(10px); }
+        }
+
+        .start-point, .end-point {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: bold;
+            color: #2c5282;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 6px;
+        }
+        .start-point { left: -30px; }
+        .end-point { right: -40px; }
+
+        .legend {
+            margin-top: 30px;
+            text-align: left;
+            width: 100%;
+            max-width: 600px;
+            background-color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .legend h2 {
+            font-size: 1.5rem;
+            color: #2c5282;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .legend-color { /* Для цветных квадратов в легенде */
+            width: 25px;
+            height: 25px;
+            border-radius: 4px;
+            margin-right: 10px;
+            border: 1px solid #a0aec0;
+        }
+        .description {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        /* Общая формация "шеврон вправо" (>) для основной схемы */
+        .car-formation {
+            position: relative;
+            width: 50px;
+            height: 35px;
+            margin-bottom: 10px;
+        }
+        .car-dot {
+            position: absolute;
+            width: 7px;
+            height: 7px;
+            background-color: white; /* Цвет точек-машин */
+            border-radius: 50%;
+            box-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+        /* Позиции для 5 машин в основной схеме (шеврон >) */
+        .car-dot.pos1 { top: 0px;   left: 50%; transform: translateX(-50%);}
+        .car-dot.pos2 { top: 8px;  left: 70%; transform: translateX(-50%);}
+        .car-dot.pos3 { top: 16px;  left: 90%; transform: translateX(-50%);} /* Точка шеврона */
+        .car-dot.pos4 { top: 24px; left: 70%; transform: translateX(-50%);}
+        .car-dot.pos5 { top: 32px; left: 50%; transform: translateX(-50%);}
+
+        /* Стили для секции детализации */
+        .details-section {
+            background-color: #e9eef3;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            margin-top: 25px;
+            text-align: center;
+        }
+        .details-section.hidden {
+            display: none;
+        }
+        .details-title {
+            color: #1a2b40;
+            font-size: 1.75rem;
+            margin-bottom: 20px;
+        }
+        .detail-formation-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 220px; /* Увеличена высота для более крупных формаций */
+            padding: 20px;
+            border: 2px dashed #a0aec0;
+            border-radius: 8px;
+            background-color: #f7fafc;
+        }
+
+        .detail-vehicle {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem; /* Меньший шрифт для названий машин */
+            color: #2d3748;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .detail-vehicle-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-bottom: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .detail-vehicle-name {
+            white-space: nowrap; /* Предотвратить перенос длинных названий */
+        }
+
+        /* Позиции для 3 машин в детализации (шеврон >) */
+        .detail-pos-3-1 { top: 25%; left: 40%; transform: translate(-50%, -50%); }
+        .detail-pos-3-2 { top: 50%; left: 70%; transform: translate(-50%, -50%); } /* Острие */
+        .detail-pos-3-3 { top: 75%; left: 40%; transform: translate(-50%, -50%); }
+
+        /* Позиции для 5 машин в детализации (шеврон >) */
+        .detail-pos-5-1 { top: 10%;  left: 40%; transform: translate(-50%, -50%); }
+        .detail-pos-5-2 { top: 30%; left: 60%; transform: translate(-50%, -50%); }
+        .detail-pos-5-3 { top: 50%; left: 80%; transform: translate(-50%, -50%); } /* Острие */
+        .detail-pos-5-4 { top: 70%; left: 60%; transform: translate(-50%, -50%); }
+        .detail-pos-5-5 { top: 90%; left: 40%; transform: translate(-50%, -50%); }
+        
+        /* Позиции для 6 машин в детализации (шеврон с двойным острием >) */
+        .detail-pos-6-1 { top: 15%; left: 30%; transform: translate(-50%, -50%); } /* База, верх */
+        .detail-pos-6-2 { top: 30%; left: 50%; transform: translate(-50%, -50%); } /* Середина, верх */
+        .detail-pos-6-3 { top: 42%; left: 70%; transform: translate(-50%, -50%); } /* Острие, верх */
+        .detail-pos-6-4 { top: 58%; left: 70%; transform: translate(-50%, -50%); } /* Острие, низ */
+        .detail-pos-6-5 { top: 70%; left: 50%; transform: translate(-50%, -50%); } /* Середина, низ */
+        .detail-pos-6-6 { top: 85%; left: 30%; transform: translate(-50%, -50%); } /* База, низ */
+
+        /* Позиции для 7 машин в детализации (широкий шеврон с центральным острием >) */
+        .detail-pos-7-1 { top: 5%;  left: 20%; transform: translate(-50%, -50%); }  /* Внешняя база, верх */
+        .detail-pos-7-2 { top: 20%; left: 40%; transform: translate(-50%, -50%); }  /* Внутренняя база, верх */
+        .detail-pos-7-3 { top: 35%; left: 60%; transform: translate(-50%, -50%); }  /* Середина, верх */
+        .detail-pos-7-4 { top: 50%; left: 80%; transform: translate(-50%, -50%); }  /* ОСТРИЕ */
+        .detail-pos-7-5 { top: 65%; left: 60%; transform: translate(-50%, -50%); }  /* Середина, низ */
+        .detail-pos-7-6 { top: 80%; left: 40%; transform: translate(-50%, -50%); }  /* Внутренняя база, низ */
+        .detail-pos-7-7 { top: 95%; left: 20%; transform: translate(-50%, -50%); }  /* Внешняя база, низ */
+
+        .close-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Схема Движения Колонн на Параде Победы</h1>
+        <p class="description">
+            Это предполагаемая схема движения для парада в SAMP. Колонны движутся в указанном порядке слева направо.
+            Каждая группа представлена условным построением из пяти машин.
+            <strong class="text-blue-600">Кликните на группу (МО, МЮ, МЗ) для просмотра детализации техники.</strong>
+        </p>
+
+        <div class="parade-route">
+            <div class="start-point">СТАРТ</div>
+
+            <div id="mo-group" class="vehicle-group mo" data-ministry="mo">
+                <div class="car-formation">
+                    <span class="car-dot pos1"></span><span class="car-dot pos2"></span><span class="car-dot pos3"></span><span class="car-dot pos4"></span><span class="car-dot pos5"></span>
+                </div>
+                МО
+            </div>
+            <div class="arrow">&rarr;</div>
+
+            <div id="mu-group" class="vehicle-group mu" data-ministry="mu">
+                 <div class="car-formation">
+                    <span class="car-dot pos1"></span><span class="car-dot pos2"></span><span class="car-dot pos3"></span><span class="car-dot pos4"></span><span class="car-dot pos5"></span>
+                </div>
+                МЮ
+            </div>
+            <div class="arrow">&rarr;</div>
+
+            <div id="mz-group" class="vehicle-group mz" data-ministry="mz">
+                <div class="car-formation">
+                    <span class="car-dot pos1"></span><span class="car-dot pos2"></span><span class="car-dot pos3"></span><span class="car-dot pos4"></span><span class="car-dot pos5"></span>
+                </div>
+                МЗ
+            </div>
+            <div class="end-point">ФИНИШ</div>
+        </div>
+
+        <div class="legend">
+            <h2>Легенда Обозначений</h2>
+            <div class="legend-item"><div class="legend-color mo"></div><span>МО - Министерство Обороны</span></div>
+            <div class="legend-item"><div class="legend-color mu"></div><span>МЮ - Министерство Юстиции</span></div>
+            <div class="legend-item"><div class="legend-color mz"></div><span>МЗ - Министерство Здравоохранения</span></div>
+            <div class="legend-item"><span class="arrow" style="animation: none; margin-right: 10px;">&rarr;</span><span>Направление движения</span></div>
+            <div class="legend-item">
+                <div style="margin-left: 2px; margin-right:10px; position: relative; width: 20px; height:15px;">
+                    <span class="car-dot" style="background-color: #4a5568; top: 0px; left: 25%; width:5px; height:5px; transform: translateX(-50%);"></span>
+                    <span class="car-dot" style="background-color: #4a5568; top: 5px; left: 75%; width:5px; height:5px; transform: translateX(-50%);"></span>
+                    <span class="car-dot" style="background-color: #4a5568; top: 10px; left: 25%; width:5px; height:5px; transform: translateX(-50%);"></span>
+                </div>
+                <span>Условное построение "шеврон вправо"</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="details-popup" class="details-section hidden">
+        <h2 id="details-title" class="details-title">Детализация Техники</h2>
+        <div id="details-content-dynamic" class="detail-formation-container">
+            </div>
+        <button id="close-details-button" class="close-button">Закрыть</button>
+    </div>
+
+    <script>
+        // Данные о технике для каждого министерства
+        const ministryData = {
+            mo: { // Ministry of Defense - 5 vehicles (uses detail-pos-5-X)
+                name: "Министерство Обороны",
+                color: "#4a5568",
+                vehicles: ["Фура", "Хаммер", "Mesa", "Хаммер", "Фура"]
+            },
+            mu: { // Ministry of Justice - 7 vehicles (uses detail-pos-7-X)
+                name: "Министерство Юстиции",
+                color: "#2b6cb0",
+                vehicles: ["БТР", "Ford Crown Victoria", "Ford LSSD", "Lamborghini", "Ford Crown Victoria", "Ferrari", "БТР"]
+            },
+            mz: { // Ministry of Health - 6 vehicles (uses detail-pos-6-X)
+                name: "Министерство Здравоохранения",
+                color: "#c53030",
+                vehicles: ["Ambulance", "Fire Truck", "Mercedes Vito", "Tesla", "Ambulance", "Ford Raptor"]
+            }
+        };
+
+        // Получаем элементы DOM
+        const moGroup = document.getElementById('mo-group');
+        const muGroup = document.getElementById('mu-group');
+        const mzGroup = document.getElementById('mz-group');
+        const detailsPopup = document.getElementById('details-popup');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsContentDynamic = document.getElementById('details-content-dynamic');
+        const closeDetailsButton = document.getElementById('close-details-button');
+
+        // Функция для отображения детализации
+        function showDetails(ministryId) {
+            const data = ministryData[ministryId];
+            if (!data) return;
+
+            detailsTitle.textContent = `Техника: ${data.name}`;
+            detailsTitle.style.color = data.color;
+
+            detailsContentDynamic.innerHTML = ''; 
+
+            const numVehicles = data.vehicles.length;
+            let positionClassesPrefix = '';
+            // Определяем префикс класса для позиционирования в зависимости от количества машин
+            if (numVehicles === 3) { // Хотя сейчас не используется, оставим для гибкости
+                positionClassesPrefix = 'detail-pos-3-';
+            } else if (numVehicles === 5) {
+                positionClassesPrefix = 'detail-pos-5-';
+            } else if (numVehicles === 6) { 
+                positionClassesPrefix = 'detail-pos-6-';
+            } else if (numVehicles === 7) { 
+                positionClassesPrefix = 'detail-pos-7-';
+            } else {
+                // Запасной вариант для другого количества машин (простой список)
+                data.vehicles.forEach(vehicleName => {
+                    const vehicleDiv = document.createElement('div');
+                    vehicleDiv.className = 'p-2 text-left'; // Стили для простого списка
+                    vehicleDiv.textContent = vehicleName;
+                    detailsContentDynamic.appendChild(vehicleDiv);
+                });
+                detailsContentDynamic.classList.remove('detail-formation-container'); 
+                detailsContentDynamic.classList.add('p-4', 'bg-white', 'rounded'); // Доп. стили для списка
+                detailsPopup.classList.remove('hidden');
+                return; // Выход, так как специальная формация не применяется
+            }
+            
+            // Восстанавливаем классы контейнера формации, если они были изменены для списка
+            detailsContentDynamic.classList.add('detail-formation-container');
+            detailsContentDynamic.classList.remove('p-4', 'bg-white', 'rounded');
+
+            // Создаем элементы для каждой машины в формации
+            data.vehicles.forEach((vehicleName, index) => {
+                const vehicleDiv = document.createElement('div');
+                vehicleDiv.className = `detail-vehicle ${positionClassesPrefix}${index + 1}`;
+
+                const dot = document.createElement('div');
+                dot.className = 'detail-vehicle-dot';
+                dot.style.backgroundColor = data.color; // Точка в цвет министерства
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'detail-vehicle-name';
+                nameSpan.textContent = vehicleName;
+
+                vehicleDiv.appendChild(dot);
+                vehicleDiv.appendChild(nameSpan);
+                detailsContentDynamic.appendChild(vehicleDiv);
+            });
+
+            // Стилизация кнопки "Закрыть"
+            closeDetailsButton.style.backgroundColor = data.color;
+            closeDetailsButton.onmouseover = () => { // Эффект при наведении
+                 if (data.color.startsWith('#') && data.color.length === 7) { // Проверка формата HEX
+                    // Упрощенное осветление цвета
+                    let r = parseInt(data.color.slice(1, 3), 16);
+                    let g = parseInt(data.color.slice(3, 5), 16);
+                    let b = parseInt(data.color.slice(5, 7), 16);
+                    r = Math.min(255, r + 30);
+                    g = Math.min(255, g + 30);
+                    b = Math.min(255, b + 30);
+                    closeDetailsButton.style.backgroundColor = `rgb(${r},${g},${b})`;
+                 } else {
+                    closeDetailsButton.style.backgroundColor = data.color; // Возврат к исходному, если не HEX
+                 }
+            };
+            closeDetailsButton.onmouseout = () => closeDetailsButton.style.backgroundColor = data.color; // Возврат цвета при убирании курсора
+
+            detailsPopup.classList.remove('hidden'); // Показываем секцию детализации
+            detailsPopup.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Плавная прокрутка к секции
+        }
+
+        // Добавляем обработчики кликов на группы министерств
+        [moGroup, muGroup, mzGroup].forEach(groupElement => {
+            if (groupElement) { // Проверка существования элемента
+                groupElement.addEventListener('click', () => {
+                    const ministryId = groupElement.getAttribute('data-ministry');
+                    showDetails(ministryId);
+                });
+            }
+        });
+
+        // Обработчик для кнопки "Закрыть"
+        if (closeDetailsButton) { // Проверка существования элемента
+            closeDetailsButton.addEventListener('click', () => {
+                detailsPopup.classList.add('hidden'); // Скрываем секцию детализации
+            });
+        }
+
+        console.log("Интерактивная схема парада (восстановленная версия) загружена.");
+    </script>
+</body>
+</html>
