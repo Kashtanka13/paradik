@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Интерактивная Схема Движения на Параде</title>
+    <title>Схема движения на Параде</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -249,10 +249,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Схема Движения Колонн на Параде Победы</h1>
+        <h1>Схема движение колонн на параде</h1>
         <p class="description">
-            Это предполагаемая схема движения для парада в SAMP. Колонны движутся в указанном порядке слева направо.
-            Каждая группа представлена условным построением из пяти машин.
+            Колонны движутся в указанном порядке слева направо.
+            Каждая группа представлена условным построением из n-го количества машин.
             <strong class="text-blue-600">Кликните на группу (МО, МЮ, МЗ) для просмотра детализации техники.</strong>
         </p>
 
@@ -280,7 +280,7 @@
             </div>
 
         <div class="legend">
-            <h2>Легенда Обозначений</h2>
+            <h2>Обозначения</h2>
             <div class="legend-item"><div class="legend-color mo"></div><span>МО - Министерство Обороны</span></div>
             <div class="legend-item"><div class="legend-color mu"></div><span>МЮ - Министерство Юстиции</span></div>
             <div class="legend-item"><div class="legend-color mz"></div><span>МЗ - Министерство Здравоохранения</span></div>
@@ -291,7 +291,7 @@
                     <span class="car-dot" style="background-color: #4a5568; top: 5px; left: 75%; width:5px; height:5px; transform: translateX(-50%);"></span>
                     <span class="car-dot" style="background-color: #4a5568; top: 10px; left: 25%; width:5px; height:5px; transform: translateX(-50%);"></span>
                 </div>
-                <span>Условное построение "шеврон вправо"</span>
+                <span>Направление построения</span>
             </div>
         </div>
     </div>
@@ -313,12 +313,12 @@
             mu: { 
                 name: "Министерство Юстиции",
                 color: "#2b6cb0",
-                vehicles: ["БТР", "Ford Crown Victoria", "Ford LSSD", "Lamborghini", "Ford Crown Victoria", "Ferrari", "БТР"]
+                vehicles: ["БТР", "Ford Crown Victoria", "Ford LSSD", "Lamborghini", "Dodge", "Ferrari", "БТР"]
             },
             mz: { 
                 name: "Министерство Здравоохранения",
                 color: "#c53030",
-                vehicles: ["Ambulance", "Fire Truck", "Mercedes Vito", "Tesla", "Ambulance", "Ford Raptor"]
+                vehicles: ["Ambulance", "Fire Truck", "Mercedes Vito", "Tesla", "Ford Raptor", "Ambulance"]
             }
         };
 
